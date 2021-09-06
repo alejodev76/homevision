@@ -1,11 +1,14 @@
 import React, {useEffect} from "react";
+import {LinearProgress, Box} from "@material-ui/core";
 
 const IntiniteScroll = (props) => {
     const {
         children,
         getNext,
-        isLoading
-
+        isLoading,
+        maxRetries,
+        isRetrying,
+        fetchError
     } = props;
 
     const handleScroll = () => {
@@ -23,7 +26,7 @@ const IntiniteScroll = (props) => {
 
     return (<div>
         <div>{children}</div>
-        {isLoading ? <div>Loading</div> : null}
+        {isLoading ? <Box pt={1} pb={8}><LinearProgress/><div>Loading...</div></Box> : null}
     </div>)
     
 }
