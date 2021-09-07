@@ -13,7 +13,7 @@ const PropertyList = () => {
   const error = useError();
   const isLoading = useIsLoading();
 
-  // Create local state properties, used for page navigation and
+  // Create local state properties, used for page navigation
   const [infinteList, setInfiniteList] = useState(propertyList);
   const [page, setPage] = useState(1);
   const [isRetry, setIsRetry] = useState(false);

@@ -5,10 +5,7 @@ const IntiniteScroll = (props) => {
     const {
         children,
         getNext,
-        isLoading,
-        maxRetries,
-        isRetrying,
-        fetchError
+        isLoading
     } = props;
 
     const handleScroll = () => {
