@@ -1,58 +1,68 @@
-import React, {useEffect, useState} from "react";
+import React, { useEffect, useState } from "react";
+import { Grid } from "@material-ui/core";
+import { usePropertiesListContext } from "../../state/properties/context";
 import Property from "./components/Property";
-import {Grid} from "@material-ui/core";
 import IntiniteScroll from "../../components/InfiniteScroll";
 
-import axios from "axios";
+const PropertyList = () => {
+  // get state and actions from the context to access context state
+  const { state, actions } = usePropertiesListContext();
+  const { usePropertyList, useError, useIsLoading } = state;
 
-const PropertyList = (props) => {
+  const propertyList = usePropertyList();
+  const error = useError();
+  const isLoading = useIsLoading();
 
-    const [properties, setProperties] = useState([]);
-    const [pageNumber, setPageNumber] = useState(1)
-    const [retryCount, setRetryCount] = useState(0);
-    const [isLoading, setIsLoading] = useState(true);
-    const [isOnTimeout, setIsOnTimeout] = useState(false);
+  // Create local state properties, used for page navigation and
+  const [infinteList, setInfiniteList] = useState(propertyList);
+  const [page, setPage] = useState(1);
+  const [isRetry, setIsRetry] = useState(false);
 
-    const getProperties = () =>  {
-
-        setIsLoading(true);
-
-        if (isOnTimeout) {
-            return;
-        }
-        
-        return axios.get(`http://app-homevision-staging.herokuapp.com/api_project/houses?page=${pageNumber}&per_page=20`)
-        .then(response => {
-            setProperties( properties.concat(response.data.houses));
-            setPageNumber(pageNumber+1);
-        })
-        .catch( e => {
-            setIsOnTimeout(true);
-            setRetryCount( retryCount+1);
-            setTimeout( ()=> {
-                setIsOnTimeout(false);
-                getProperties();
-            }, 3000);
-        } )
+  // Call to get the next set of properties
+  const getNextPropertySet = () => {
+    if (!isLoading || isRetry) {
+      actions.getProperties({ page, perPage: 30 });
     }
-    
-    useEffect( ()=> {
-            getProperties();  
-    }, [])
+  };
 
-    return (<IntiniteScroll
-                getNext={getProperties}
-                isLoading={isLoading}
-                maxRetries={3}
-            >
-                <Grid container>
-                    {properties.map( property => (
-                        <Grid xs={12} sm={6} md={4} lg={3} item key={property.id}>
-                            <Property {...property} />
-                        </Grid>
-                    ))}
-                </Grid>
-            </IntiniteScroll>)
-}
+  // Initialize the list of properties
+  useEffect(() => {
+    getNextPropertySet();
+  }, []);
+
+  // Observe the error property and try to fetch data again after a 2 second delay
+  useEffect(() => {
+    if (error !== null) {
+      setIsRetry(true);
+      setTimeout(() => {
+        getNextPropertySet();
+      }, 1000);
+    }
+  }, [error]);
+
+  // Update list in the component's state and append the new data set to the local list property
+  useEffect(() => {
+    if (propertyList.length > 0) {
+      setInfiniteList(infinteList.concat(propertyList));
+      setIsRetry(false);
+      setPage(page + 1);
+    }
+  }, [propertyList]);
+
+  return (
+    <IntiniteScroll
+      getNext={getNextPropertySet}
+      isLoading={isLoading || isRetry}
+    >
+      <Grid container>
+        {infinteList.map((property) => (
+          <Grid xs={12} sm={6} md={4} lg={3} item key={property.id}>
+            <Property photoURL={property.photoURL} address={property.address} />
+          </Grid>
+        ))}
+      </Grid>
+    </IntiniteScroll>
+  );
+};
 
 export default PropertyList;

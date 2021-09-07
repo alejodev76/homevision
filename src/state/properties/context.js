@@ -1,27 +1,34 @@
 import { useDispatch, useSelector } from "react-redux";
-import { sample as sampleAction } from "./actions";
+import { getProperties as getPropertiesAction } from "./actions";
 
-const usePropertiesContext = () => {
-	const dispatch = useDispatch();
+const usePropertiesListContext = () => {
+  const dispatch = useDispatch();
 
-	const useIsLoading = () =>
-		useSelector((state) => state.properties.isLoading);
+  const useIsLoading = () => useSelector((state) => state.properties.isLoading);
 
-	const state = {
-		useIsLoading
-	};
+  const usePropertyList = () =>
+    useSelector((state) => state.properties.propertyList);
 
-	const sample = (status) => {
-		return sampleAction(dispatch, status);
-	};
-	const actions = {
-		sample
-	};
+  const useError = () => useSelector((state) => state.properties.error);
 
-	return {
-		state,
-		actions
-	};
+  const state = {
+    useIsLoading,
+    usePropertyList,
+    useError,
+  };
+
+  const getProperties = (params) => {
+    return getPropertiesAction(dispatch, params);
+  };
+
+  const actions = {
+    getProperties,
+  };
+
+  return {
+    state,
+    actions,
+  };
 };
 
-export { useHomeContext };
+export { usePropertiesListContext };
